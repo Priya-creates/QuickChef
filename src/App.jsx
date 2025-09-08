@@ -3,7 +3,7 @@ import axios from "axios";
 import { IoIosArrowDropdown } from "react-icons/io";
 import DishCard from "./components/DishCard";
 import Title from "./components/Title";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaExclamationTriangle } from "react-icons/fa";
 import { duration } from "./assets/duration";
 import { RiResetLeftFill } from "react-icons/ri";
 import { MdAccessTime } from "react-icons/md";
@@ -11,12 +11,14 @@ import { RiArrowDropDownLine } from "react-icons/ri";
 
 const App = () => {
   const [ingredient, setIngredient] = React.useState("");
+  const [ingredientResults, setIngredientResults] = React.useState({});
+  const [lockedNoMatch, setLockedNoMatch] = React.useState(false);
   const [dishes, setDishes] = React.useState([]);
   const [ingredientList, setIngredientList] = React.useState([]);
   const [showDropdown, setShowDropdown] = React.useState(false);
   const [showChooseTime, setShowChooseTime] = React.useState(false);
   const [dishesWithTime, setDishesWithTime] = React.useState([]);
-
+  const [ingreListWithNoDishes, setIngreListWithNoDishes] = React.useState([]);
   const [message, setMessage] = React.useState("");
   const [loading, setLoading] = React.useState(false);
 
@@ -34,46 +36,57 @@ const App = () => {
     over_60: [],
   });
 
-  // fetch dishes by ingredient (filter.php)
+  // Categorize meals by duration
+  React.useEffect(() => {
+    const newCategories = {
+      under_15: [],
+      under_30: [],
+      under_60: [],
+      over_60: [],
+    };
+    for (const id in duration) {
+      const mins = duration[id];
+      if (mins <= 15) newCategories.under_15.push(String(id));
+      else if (mins <= 30) newCategories.under_30.push(String(id));
+      else if (mins <= 60) newCategories.under_60.push(String(id));
+      else newCategories.over_60.push(String(id));
+    }
+    setCategory(newCategories);
+  }, []);
+
+  // Fetch dishes by ingredient
   async function handleAdd(e) {
     e.preventDefault();
     setMessage("");
 
-    if (!ingredient.trim()) {
+    const key = ingredient.trim().toLowerCase();
+    if (!key) {
       setMessage("Enter an ingredient first");
       return;
     }
 
-    if (!ingredientList.includes(ingredient.trim())) {
-      setIngredientList((prev) => [...prev, ingredient.trim()]);
+    // prevent duplicate API calls
+    if (ingredientList.includes(key)) {
+      setMessage(`"${key}" is already added`);
+      return;
     }
 
+    setIngredientList((prev) => [...prev, key]);
+
     const url = `https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(
-      ingredient.trim()
+      key
     )}`;
-    setIngredient("");
     setLoading(true);
 
     try {
       const res = await axios.get(url);
       const tempArr = res.data.meals || null;
 
-      if (!tempArr) {
-        setMessage(`No dishes found for "${ingredient.trim()}"`);
-        setDishes([]);
-        setDishesWithTime([]);
-      } else {
-        if (dishes.length === 0) {
-          setDishes(tempArr);
-        } else {
-          const filter_arr = dishes.filter((dish) =>
-            tempArr.some((tempDish) => tempDish.idMeal === dish.idMeal)
-          );
-          setDishes(filter_arr);
-        }
-        const activeTime = Object.keys(time).find((k) => time[k]);
-        if (activeTime) filterByTime(activeTime);
-      }
+      setIngredientResults((prev) => ({
+        ...prev,
+        [key]: tempArr,
+      }));
+      setIngredient("");
     } catch (err) {
       console.error(err);
       setMessage("Something went wrong while fetching. Try again.");
@@ -82,46 +95,42 @@ const App = () => {
     }
   }
 
-  // All (reset time filter to show all current dishes)
-  function handleAll() {
-    setShowChooseTime(false);
-    setDishesWithTime([]);
-    setTime({
-      under_15: false,
-      under_30: false,
-      under_60: false,
-      over_60: false,
-    });
-  }
-
+  // Recompute dishes whenever ingredientResults changes
   React.useEffect(() => {
-    function categorizeDuration() {
-      const newCategories = {
-        under_15: [],
-        under_30: [],
-        under_60: [],
-        over_60: [],
-      };
+    const noDishKeys = Object.keys(ingredientResults).filter(
+      (k) => !ingredientResults[k]?.length
+    );
+    setIngreListWithNoDishes(noDishKeys);
+    setLockedNoMatch(noDishKeys.length > 0);
 
-      for (const id in duration) {
-        const mins = duration[id];
-        if (mins <= 15) {
-          newCategories.under_15.push(String(id));
-        } else if (mins <= 30) {
-          newCategories.under_30.push(String(id));
-        } else if (mins <= 60) {
-          newCategories.under_60.push(String(id));
-        } else {
-          newCategories.over_60.push(String(id));
-        }
-      }
-
-      setCategory(newCategories);
+    const nonNullResults = Object.values(ingredientResults).filter(
+      (arr) => Array.isArray(arr) && arr.length > 0
+    );
+    if (!nonNullResults.length) {
+      setDishes([]);
+      setDishesWithTime([]);
+      return;
     }
 
-    categorizeDuration();
-  }, []);
+    let base = [...nonNullResults[0]];
+    nonNullResults.slice(1).forEach((current) => {
+      base = base.filter((item) =>
+        current.some((c) => String(c.idMeal) === String(item.idMeal))
+      );
+    });
 
+    setDishes(base);
+
+    const activeTime = Object.keys(time).find((k) => time[k]);
+    if (activeTime) {
+      const catList = category[activeTime] || [];
+      setDishesWithTime(
+        base.filter((item) => catList.includes(String(item.idMeal)))
+      );
+    } else {
+      setDishesWithTime([]);
+    }
+  }, [ingredientResults]);
 
   function handleReset() {
     setDishes([]);
@@ -135,19 +144,20 @@ const App = () => {
       over_60: false,
     });
     setMessage("");
+    setIngredientResults({});
+    setIngreListWithNoDishes([]);
+    setLockedNoMatch(false);
   }
 
-  function filterByTime(cat) {
-    if (!cat) return;
-    if (!dishes || dishes.length === 0) {
-      setDishesWithTime([]);
-      return;
-    }
-    const catList = category[cat] || [];
-    const filter_arr = dishes.filter((item) =>
-      catList.includes(String(item.idMeal))
-    );
-    setDishesWithTime(filter_arr);
+  function handleAll() {
+    setShowChooseTime(false);
+    setDishesWithTime([]);
+    setTime({
+      under_15: false,
+      under_30: false,
+      under_60: false,
+      over_60: false,
+    });
   }
 
   function handleTimeSelected(e) {
@@ -159,30 +169,29 @@ const App = () => {
       over_60: false,
       [selected]: true,
     });
-    filterByTime(selected);
+
+    const catList = category[selected] || [];
+    setDishesWithTime(
+      dishes.filter((item) => catList.includes(String(item.idMeal)))
+    );
     setShowChooseTime(false);
   }
 
-  const getTimeForDish = (id) => {
-    return duration[String(id)] ?? 30;
-  };
+  const getTimeForDish = (id) => duration[String(id)] ?? 30;
 
   return (
     <div className="min-h-screen bg-zinc-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* more breathing room under heading */}
         <div className="mb-6">
           <Title />
         </div>
 
-        {/* top info / count */}
+        {/* Top info */}
         <div className="flex items-center justify-between gap-4 flex-col sm:flex-row">
           <div className="text-sm text-zinc-600">
             Showing{" "}
             <span className="font-semibold text-pink-700">
-              {dishesWithTime.length > 0
-                ? dishesWithTime.length
-                : dishes.length}
+              {dishesWithTime.length > 0 ? dishesWithTime.length : dishes.length}
             </span>{" "}
             dishes
           </div>
@@ -270,7 +279,6 @@ const App = () => {
                   setMessage("");
                 }}
               />
-
               <button
                 type="submit"
                 aria-label="Add ingredient"
@@ -293,28 +301,51 @@ const App = () => {
 
           <div className="max-w-3xl mx-auto mt-2">
             {loading && (
-              <div className="text-sm text-pink-700 font-medium">
-                Loading...
-              </div>
+              <div className="text-sm text-pink-700 font-medium">Loading...</div>
             )}
             {message && !loading && (
               <div className="text-sm text-red-600 mt-1">{message}</div>
             )}
           </div>
 
+          {/* Ingredient list */}
           {ingredientList.length > 0 && (
             <div className="max-w-3xl mx-auto mt-3 flex flex-wrap gap-2">
               {ingredientList.map((it) => (
                 <div
                   key={it}
-                  className="bg-pink-100 text-pink-700 px-3 py-1 rounded-full text-sm shadow-sm"
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm shadow-sm ${
+                    ingreListWithNoDishes.includes(it)
+                      ? "bg-yellow-300 text-yellow-900"
+                      : "bg-pink-100 text-pink-700"
+                  }`}
+                  title={
+                    ingreListWithNoDishes.includes(it)
+                      ? "No dishes found for this ingredient"
+                      : ""
+                  }
                 >
                   {it}
+                  {ingreListWithNoDishes.includes(it) && (
+                    <FaExclamationTriangle size={12} />
+                  )}
                 </div>
               ))}
             </div>
           )}
 
+          {/* Warning message */}
+          {lockedNoMatch && ingreListWithNoDishes.length > 0 && (
+            <div className="text-yellow-900 mt-2 text-sm flex items-center gap-1">
+              <FaExclamationTriangle />
+              No dishes found for:{" "}
+              <span className="font-semibold">
+                {ingreListWithNoDishes.at(-1)}
+              </span>
+            </div>
+          )}
+
+          {/* Dropdown */}
           {showDropdown && ingredientList.length > 0 && (
             <div className="max-w-3xl mx-auto mt-3 bg-white border rounded shadow p-1">
               {ingredientList.map((item) => (
@@ -329,13 +360,14 @@ const App = () => {
           )}
         </div>
 
+        {/* No dishes matched */}
         {!loading && dishes.length === 0 && ingredientList.length > 0 && (
           <div className="text-center text-gray-500 mt-8">
             No dishes matched your ingredient filters.
           </div>
         )}
 
-        {/* Dish grid: responsive, centered items, md => 3 cols, lg => 4 cols */}
+        {/* Dish grid */}
         <div className="mt-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-6 md:gap-8 place-items-center">
             {(Object.values(time).some((t) => t) ? dishesWithTime : dishes).map(
@@ -351,6 +383,7 @@ const App = () => {
             )}
           </div>
         </div>
+
         {Object.values(time).some((t) => t) && dishesWithTime.length === 0 && (
           <div className="text-center text-gray-500 mt-8">
             No dishes found for selected time filter.
