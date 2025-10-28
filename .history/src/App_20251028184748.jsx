@@ -178,15 +178,19 @@ const App = () => {
   }
 
   const getTimeForDish = (id) => duration[String(id)] ?? 30;
+  React.useEffect(() => {
+    console.log("heyyy", ingredientResults);
+  }, [ingredientResults]);
 
   function handleRemove(ingre) {
     let filtered_ingredients = ingredientList.filter((item) => item !== ingre);
     setIngredientList(filtered_ingredients);
+    console.log(Object.keys(ingredientResults))
     setIngredientResults((prev) => {
-      const updated = { ...prev };
-      delete updated[ingre];
-      return updated;
-    });
+    const updated = { ...prev };
+     
+    return updated;
+  });
   }
 
   return (

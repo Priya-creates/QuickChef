@@ -179,14 +179,16 @@ const App = () => {
 
   const getTimeForDish = (id) => duration[String(id)] ?? 30;
 
+
   function handleRemove(ingre) {
     let filtered_ingredients = ingredientList.filter((item) => item !== ingre);
     setIngredientList(filtered_ingredients);
+    c
     setIngredientResults((prev) => {
-      const updated = { ...prev };
-      delete updated[ingre];
-      return updated;
-    });
+    const updated = { ...prev };
+    delete updated[ingre]; 
+    return updated;
+  });
   }
 
   return (

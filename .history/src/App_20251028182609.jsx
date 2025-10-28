@@ -179,16 +179,6 @@ const App = () => {
 
   const getTimeForDish = (id) => duration[String(id)] ?? 30;
 
-  function handleRemove(ingre) {
-    let filtered_ingredients = ingredientList.filter((item) => item !== ingre);
-    setIngredientList(filtered_ingredients);
-    setIngredientResults((prev) => {
-      const updated = { ...prev };
-      delete updated[ingre];
-      return updated;
-    });
-  }
-
   return (
     <div className="min-h-screen bg-zinc-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -373,16 +363,14 @@ const App = () => {
             }`}
           >
             {ingredientList.map((item) => (
-              <div
-                onClick={() => handleRemove(item)}
-                className="flex justify-between items-center px-2 py-1"
-              >
-                <div key={item} className=" text-pink-700 ">
+              <div className="flex justify-between items-center">
+                <div
+                  key={item}
+                  className="px-2 py-1 text-pink-700 "
+                >
                   {item}
                 </div>
-                <button className="text-[13px] text-pink-700 font-semibold bg-pink-100 px-2 py-1 rounded-md transition-all duration-300 ease-out hover:bg-pink-200 ">
-                  Remove
-                </button>
+                <button className="text-sm text-pink-700">Remove</button>
               </div>
             ))}
           </div>

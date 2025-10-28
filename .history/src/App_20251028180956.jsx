@@ -179,16 +179,6 @@ const App = () => {
 
   const getTimeForDish = (id) => duration[String(id)] ?? 30;
 
-  function handleRemove(ingre) {
-    let filtered_ingredients = ingredientList.filter((item) => item !== ingre);
-    setIngredientList(filtered_ingredients);
-    setIngredientResults((prev) => {
-      const updated = { ...prev };
-      delete updated[ingre];
-      return updated;
-    });
-  }
-
   return (
     <div className="min-h-screen bg-zinc-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -227,52 +217,48 @@ const App = () => {
                 <RiArrowDropDownLine />
               </button>
 
-              <div
-                className={`mt-2 w-44 right-0 absolute  rounded shadow-lg p-2 text-sm z-40 text-pink-700 bg-pink-100 transition-all duration-300 ease-in  ${
-                  showChooseTime
-                    ? "opacity-100 translate-y-0 visible"
-                    : "opacity-0 -translate-y-2 invisible"
-                } `}
-              >
-                <button
-                  onClick={handleAll}
-                  className="w-full text-left px-2 py-1 rounded hover:bg-pink-200"
-                >
-                  All
-                </button>
-                <hr className="my-1" />
-                <button
-                  data-name="under_15"
-                  onClick={handleTimeSelected}
-                  className="w-full text-left px-2 py-1 rounded hover:bg-pink-200"
-                >
-                  Under 15 mins
-                </button>
-                <hr className="my-1" />
-                <button
-                  data-name="under_30"
-                  onClick={handleTimeSelected}
-                  className="w-full text-left px-2 py-1 rounded hover:bg-pink-200"
-                >
-                  15 - 30 mins
-                </button>
-                <hr className="my-1" />
-                <button
-                  data-name="under_60"
-                  onClick={handleTimeSelected}
-                  className="w-full text-left px-2 py-1 rounded hover:bg-pink-200"
-                >
-                  30 - 60 mins
-                </button>
-                <hr className="my-1" />
-                <button
-                  data-name="over_60"
-                  onClick={handleTimeSelected}
-                  className="w-full text-left px-2 py-1 rounded hover:bg-pink-200"
-                >
-                  Over 1 hour
-                </button>
-              </div>
+              {showChooseTime && (
+                <div className={mt-2 w-44 right-0 absolute  rounded shadow-lg p-2 text-sm z-40 text-pink-700 bg-pink-100 transition-all duration-300 ease-in }>
+                  <button
+                    onClick={handleAll}
+                    className="w-full text-left px-2 py-1 rounded hover:bg-pink-200"
+                  >
+                    All
+                  </button>
+                  <hr className="my-1" />
+                  <button
+                    data-name="under_15"
+                    onClick={handleTimeSelected}
+                    className="w-full text-left px-2 py-1 rounded hover:bg-pink-200"
+                  >
+                    Under 15 mins
+                  </button>
+                  <hr className="my-1" />
+                  <button
+                    data-name="under_30"
+                    onClick={handleTimeSelected}
+                    className="w-full text-left px-2 py-1 rounded hover:bg-pink-200"
+                  >
+                    15 - 30 mins
+                  </button>
+                  <hr className="my-1" />
+                  <button
+                    data-name="under_60"
+                    onClick={handleTimeSelected}
+                    className="w-full text-left px-2 py-1 rounded hover:bg-pink-200"
+                  >
+                    30 - 60 mins
+                  </button>
+                  <hr className="my-1" />
+                  <button
+                    data-name="over_60"
+                    onClick={handleTimeSelected}
+                    className="w-full text-left px-2 py-1 rounded hover:bg-pink-200"
+                  >
+                    Over 1 hour
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -364,28 +350,18 @@ const App = () => {
           )}
 
           {/* Dropdown */}
-
-          <div
-            className={`max-w-3xl mx-auto mt-3 bg-white border-1 border-pink-300 rounded shadow p-1 transition-all duration-300 ease-in  ${
-              showDropdown && ingredientList.length > 0
-                ? "opacity-100 translate-y-0 visible"
-                : "opacity-0 -translate-y-2 invisible"
-            }`}
-          >
-            {ingredientList.map((item) => (
-              <div
-                onClick={() => handleRemove(item)}
-                className="flex justify-between items-center px-2 py-1"
-              >
-                <div key={item} className=" text-pink-700 ">
+          {showDropdown && ingredientList.length > 0 && (
+            <div className="max-w-3xl mx-auto mt-3 bg-white border rounded shadow p-1">
+              {ingredientList.map((item) => (
+                <div
+                  key={item}
+                  className="px-2 py-1 text-pink-700 border-b last:border-b-0"
+                >
                   {item}
                 </div>
-                <button className="text-[13px] text-pink-700 font-semibold bg-pink-100 px-2 py-1 rounded-md transition-all duration-300 ease-out hover:bg-pink-200 ">
-                  Remove
-                </button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* No dishes matched */}

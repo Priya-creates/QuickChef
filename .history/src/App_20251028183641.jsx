@@ -178,15 +178,13 @@ const App = () => {
   }
 
   const getTimeForDish = (id) => duration[String(id)] ?? 30;
+  React.useEffect(()=>{
+    console.log("heyyy",ingredientList);
+  },[ingredientList])
 
-  function handleRemove(ingre) {
-    let filtered_ingredients = ingredientList.filter((item) => item !== ingre);
-    setIngredientList(filtered_ingredients);
-    setIngredientResults((prev) => {
-      const updated = { ...prev };
-      delete updated[ingre];
-      return updated;
-    });
+  function handleRemove(){
+let filtered_ingredients = ingredientList.filter((item)=>)
+
   }
 
   return (
@@ -373,16 +371,14 @@ const App = () => {
             }`}
           >
             {ingredientList.map((item) => (
-              <div
-                onClick={() => handleRemove(item)}
-                className="flex justify-between items-center px-2 py-1"
-              >
-                <div key={item} className=" text-pink-700 ">
+              <div onClick={handleRemove} className="flex justify-between items-center px-2 py-1">
+                <div
+                  key={item}
+                  className=" text-pink-700 "
+                >
                   {item}
                 </div>
-                <button className="text-[13px] text-pink-700 font-semibold bg-pink-100 px-2 py-1 rounded-md transition-all duration-300 ease-out hover:bg-pink-200 ">
-                  Remove
-                </button>
+                <button className="text-[13px] text-pink-700 font-semibold bg-pink-100 px-2 py-1 rounded-md transition-all duration-300 ease-out hover:bg-pink-200 ">Remove</button>
               </div>
             ))}
           </div>
