@@ -38,21 +38,27 @@ const App = () => {
 
   // Categorize meals by duration
   React.useEffect(() => {
+    if (!dishes.length) return;
+
     const newCategories = {
       under_15: [],
       under_30: [],
       under_60: [],
       over_60: [],
     };
-    for (const id in duration) {
-      const mins = duration[id];
-      if (mins <= 15) newCategories.under_15.push(String(id));
-      else if (mins <= 30) newCategories.under_30.push(String(id));
-      else if (mins <= 60) newCategories.under_60.push(String(id));
-      else newCategories.over_60.push(String(id));
-    }
+
+    dishes.forEach((dish) => {
+      const id = String(dish.idMeal);
+      const mins = duration[id] ?? 30;
+
+      if (mins <= 15) newCategories.under_15.push(id);
+      else if (mins <= 30) newCategories.under_30.push(id);
+      else if (mins <= 60) newCategories.under_60.push(id);
+      else newCategories.over_60.push(id);
+    });
+
     setCategory(newCategories);
-  }, []);
+  }, [dishes, duration]);
 
   // Fetch dishes by ingredient
   async function handleAdd(e) {
@@ -130,7 +136,7 @@ const App = () => {
     } else {
       setDishesWithTime([]);
     }
-  }, [ingredientResults]);
+  }, [ingredientResults, category, time]);
 
   function handleReset() {
     setDishes([]);
@@ -198,9 +204,9 @@ const App = () => {
 
         {/* Top info */}
         <div className="flex items-center justify-between gap-4 flex-col sm:flex-row">
-          <div className="text-sm text-zinc-600">
+          <div className="text-sm text-pink-700">
             Showing{" "}
-            <span className="font-semibold text-pink-700">
+            <span className="font-bold text-pink-700">
               {dishesWithTime.length > 0
                 ? dishesWithTime.length
                 : dishes.length}
@@ -228,7 +234,7 @@ const App = () => {
               </button>
 
               <div
-                className={`mt-2 w-44 right-0 absolute  rounded shadow-lg p-2 text-sm z-40 text-pink-700 bg-pink-100 transition-all duration-300 ease-in  ${
+                className={`mt-2 w-44 right-0 absolute  rounded shadow-lg p-2 text-sm z-40 text-pink-700 bg-pink-50 transition-all duration-300 ease-in  ${
                   showChooseTime
                     ? "opacity-100 translate-y-0 visible"
                     : "opacity-0 -translate-y-2 invisible"
@@ -366,7 +372,7 @@ const App = () => {
           {/* Dropdown */}
 
           <div
-            className={`max-w-3xl mx-auto mt-3 bg-white border-1 border-pink-300 rounded shadow p-1 transition-all duration-300 ease-in  ${
+            className={`max-w-3xl mx-auto mt-3 bg-white border-1 border-pink-300 rounded shadow  transition-all duration-300 ease-in  ${
               showDropdown && ingredientList.length > 0
                 ? "opacity-100 translate-y-0 visible"
                 : "opacity-0 -translate-y-2 invisible"
@@ -374,13 +380,14 @@ const App = () => {
           >
             {ingredientList.map((item) => (
               <div
+                key={item}
                 onClick={() => handleRemove(item)}
-                className="flex justify-between items-center px-2 py-1"
+                className="flex justify-between items-center  hover:bg-pink-100 p-1 px-2 "
               >
-                <div key={item} className=" text-pink-700 ">
-                  {item}
+                <div key={item} className=" text-pink-700  ">
+                  {item.charAt(0).toUpperCase().concat(item.slice(1))}
                 </div>
-                <button className="text-[13px] text-pink-700 font-semibold bg-pink-100 px-2 py-1 rounded-md transition-all duration-300 ease-out hover:bg-pink-200 ">
+                <button className="text-[13px] text-pink-700   rounded-md transition-all duration-300 ease-out hover:bg-pink-300 py-[2px] px-[4px] ">
                   Remove
                 </button>
               </div>
@@ -397,7 +404,7 @@ const App = () => {
 
         {/* Dish grid */}
         <div className="mt-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-6 md:gap-8 place-items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-6 md:gap-y-10 place-items-center">
             {(Object.values(time).some((t) => t) ? dishesWithTime : dishes).map(
               (item) => (
                 <div key={item.idMeal} className="w-full flex justify-center">

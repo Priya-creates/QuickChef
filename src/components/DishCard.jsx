@@ -2,14 +2,14 @@ import React from "react";
 
 const DishCard = (props) => {
   return (
-    <div>
-      <div className="w-full md:w-[210px] lg:w-[250px]">
-        <img src={props.img} alt="meal-img" className="rounded" />
+    <div className="flex flex-col">
+      <div className="w-full md:w-[210px] lg:w-[250px] object-cover">
+        <img src={props.img} alt="meal-img" className="rounded shadow-md" />
       </div>
-      <div className="text-[17px] text-center mt-2 font-semibold">
+      <div className="text-[15px] text-center mt-4 font-semibold bg-pink-200 text-pink-700 rounded-md py-1 px-3 inline-block mx-auto">
         {props.name}
       </div>
-      <div className="text-center text-[15px] mt-2">Time Required: {props.time} minutes</div>
+      <div className="text-center text-[14px] mt-2 text-pink-700">Time Required: {props.time} minutes</div>
     </div>
   );
 };
