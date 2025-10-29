@@ -188,6 +188,7 @@ const App = () => {
   function handleRemove(ingre) {
     let filtered_ingredients = ingredientList.filter((item) => item !== ingre);
     setIngredientList(filtered_ingredients);
+    setShowDropdown(false);
     setIngredientResults((prev) => {
       const updated = { ...prev };
       delete updated[ingre];
