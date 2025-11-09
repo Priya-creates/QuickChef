@@ -8,17 +8,21 @@ export const FavouritesProvider = ({ children }) => {
 
   //setting the favourites at starting
   useEffect(() => {
-    if (localStorage.getItem("favourites")) {
-      let favouritesList = JSON.parse(localStorage.getItem("favourites"));
-      setFavourites(favouritesList);
-    } else {
-      localStorage.setItem("favourites", JSON.stringify([]));
+  const stored = localStorage.getItem("favourites");
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) setFavourites(parsed);
+    } catch {
+      console.error("Invalid favourites data in localStorage");
     }
-  }, []);
+  }
+}, []); // ✅ Runs only once — never loops
 
-  useEffect(() => {
-    localStorage.setItem("favourites", JSON.stringify(favourites));
-  }, [favourites]);
+useEffect(() => {
+  localStorage.setItem("favourites", JSON.stringify(favourites));
+}, [favourites]); // ✅ Runs only when favourites changes
+
 
   return(
     <FavouritesContext.Provider value={{favourites, setFavourites}}>

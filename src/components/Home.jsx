@@ -9,7 +9,6 @@ import { RiResetLeftFill } from "react-icons/ri";
 import { MdAccessTime } from "react-icons/md";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
-import { FavouritesContext } from "../context/FavouritesContext.jsx";
 
 const Home = () => {
   const [ingredient, setIngredient] = React.useState("");
@@ -39,7 +38,7 @@ const Home = () => {
     over_60: [],
   });
 
-  // Categorize meals by duration
+  // 1️⃣ Compute category ONLY from dishes (fine)
   React.useEffect(() => {
     if (!dishes.length) return;
 
@@ -62,6 +61,39 @@ const Home = () => {
 
     setCategory(newCategories);
   }, [dishes]);
+
+  // 2️⃣ Compute dishes ONLY from ingredientResults
+  React.useEffect(() => {
+    const nonNullResults = Object.values(ingredientResults).filter(
+      (arr) => Array.isArray(arr) && arr.length > 0
+    );
+    if (!nonNullResults.length) {
+      setDishes([]);
+      return;
+    }
+
+    let base = [...nonNullResults[0]];
+    nonNullResults.slice(1).forEach((current) => {
+      base = base.filter((item) =>
+        current.some((c) => String(c.idMeal) === String(item.idMeal))
+      );
+    });
+
+    setDishes(base);
+  }, [ingredientResults]);
+
+  // 3️⃣ Compute dishesWithTime separately
+  React.useEffect(() => {
+    const activeTime = Object.keys(time).find((k) => time[k]);
+    if (activeTime && category[activeTime]) {
+      const catList = category[activeTime];
+      setDishesWithTime(
+        dishes.filter((item) => catList.includes(String(item.idMeal)))
+      );
+    } else {
+      setDishesWithTime([]);
+    }
+  }, [category, time, dishes]);
 
   // Fetch dishes by ingredient
   async function handleAdd(e) {
@@ -89,7 +121,9 @@ const Home = () => {
 
     try {
       const res = await axios.get(url);
-      const tempArr = res.data.meals || null;
+
+      let  tempArr = res.data.meals || null;
+      tempArr = tempArr.filter((item) => item.strMealThumb != null);
 
       setIngredientResults((prev) => ({
         ...prev,
@@ -103,43 +137,6 @@ const Home = () => {
       setLoading(false);
     }
   }
-
-  // Recompute dishes whenever ingredientResults changes
-  React.useEffect(() => {
-    const noDishKeys = Object.keys(ingredientResults).filter(
-      (k) => !ingredientResults[k]?.length
-    );
-    setIngreListWithNoDishes(noDishKeys);
-    setLockedNoMatch(noDishKeys.length > 0);
-
-    const nonNullResults = Object.values(ingredientResults).filter(
-      (arr) => Array.isArray(arr) && arr.length > 0
-    );
-    if (!nonNullResults.length) {
-      setDishes([]);
-      setDishesWithTime([]);
-      return;
-    }
-
-    let base = [...nonNullResults[0]];
-    nonNullResults.slice(1).forEach((current) => {
-      base = base.filter((item) =>
-        current.some((c) => String(c.idMeal) === String(item.idMeal))
-      );
-    });
-
-    setDishes(base);
-
-    const activeTime = Object.keys(time).find((k) => time[k]);
-    if (activeTime) {
-      const catList = category[activeTime] || [];
-      setDishesWithTime(
-        base.filter((item) => catList.includes(String(item.idMeal)))
-      );
-    } else {
-      setDishesWithTime([]);
-    }
-  }, [ingredientResults, category, time]);
 
   function handleReset() {
     setDishes([]);
