@@ -1,17 +1,17 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { IoMdHeartEmpty } from "react-icons/io";
 import { IoMdHeart } from "react-icons/io";
+import { FavouritesContext } from "../context/FavouritesContext";
 
 const DishCard = ({
   id,
   img,
   name,
   time,
-  favourites,
-  setFavourites,
   isFavPage,
 }) => {
   const [isFilled, setIsFilled] = useState(false);
+  const {favourites, setFavourites} = useContext(FavouritesContext);
 
   function handleAddToFavorite(id, name, img, time) {
     let favourites = JSON.parse(localStorage.getItem("favourites"));

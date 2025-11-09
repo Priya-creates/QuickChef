@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import axios from "axios";
 import { IoIosArrowDropdown } from "react-icons/io";
-import DishCard from "./DishCard.jsx"
+import DishCard from "./DishCard.jsx";
 import Title from "./Title.jsx";
 import { FaPlus, FaExclamationTriangle } from "react-icons/fa";
 import { duration } from "../assets/duration.js";
@@ -9,7 +9,7 @@ import { RiResetLeftFill } from "react-icons/ri";
 import { MdAccessTime } from "react-icons/md";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
-
+import { FavouritesContext } from "../context/FavouritesContext.jsx";
 
 const Home = () => {
   const [ingredient, setIngredient] = React.useState("");
@@ -23,21 +23,8 @@ const Home = () => {
   const [ingreListWithNoDishes, setIngreListWithNoDishes] = React.useState([]);
   const [message, setMessage] = React.useState("");
   const [loading, setLoading] = React.useState(false);
-  const [favourites, setFavourites] = React.useState([]);
-  
+
   const navigate = useNavigate();
-
-    useEffect(() => {
-      if (localStorage.getItem("favourites")) {
-        let favouritesList = JSON.parse(localStorage.getItem("favourites"));
-        setFavourites(favouritesList);
-      } else {
-        localStorage.setItem("favourites", JSON.stringify([]));
-      }
-    }, []);
-
-   
-
   const [time, setTime] = React.useState({
     under_15: false,
     under_30: false,
@@ -141,11 +128,7 @@ const Home = () => {
       );
     });
 
-    
-
     setDishes(base);
-
-    
 
     const activeTime = Object.keys(time).find((k) => time[k]);
     if (activeTime) {
@@ -236,8 +219,6 @@ const Home = () => {
           </div>
 
           <div className="flex gap-3 items-center">
-
-            
             <div className="relative">
               <button
                 onClick={() => setShowChooseTime((s) => !s)}
@@ -295,15 +276,18 @@ const Home = () => {
                 </button>
               </div>
             </div>
-            
+
             <button
-            onClick={()=> navigate("/favourites")}
-            
+              onClick={() =>
+                setTimeout(() => {
+                  navigate("/favourites");
+                }, 200)
+              }
               className="flex gap-2 items-center bg-pink-200 text-pink-700 px-3 py-2 rounded-2xl shadow hover:scale-102 transition-transform"
             >
               Favourites
             </button>
-          
+
             <button
               onClick={handleReset}
               className="flex gap-2 items-center bg-pink-200 text-pink-700 px-3 py-2 rounded-2xl shadow hover:scale-102 transition-transform"
@@ -440,14 +424,10 @@ const Home = () => {
               (item) => (
                 <div key={item.idMeal} className="w-full flex justify-center">
                   <DishCard
-                  id={item.idMeal}
+                    id={item.idMeal}
                     img={item.strMealThumb}
                     name={item.strMeal}
                     time={getTimeForDish(item.idMeal)}
-                    favourites={favourites}
-                    setFavourites={setFavourites}
-                    
-                   
                   />
                 </div>
               )

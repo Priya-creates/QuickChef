@@ -1,20 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { IoIosHeart } from "react-icons/io";
 import { RiArrowGoBackFill } from "react-icons/ri";
 import DishCard from "./DishCard.jsx";
+import { Link } from "react-router-dom";
+import { FavouritesContext } from "../context/FavouritesContext.jsx";
 
 const Favourites = () => {
-  const [favourites, setFavourites] = useState([]);
   const [isFavPage, setIsFavPage] = useState(true);
-
-  function setFav() {
-    let fav = JSON.parse(localStorage.getItem("favourites"));
-    setFavourites(fav);
-  }
-
-  useEffect(() => {
-    setFav();
-  }, []);
+  const { favourites } = useContext(FavouritesContext);
 
   return (
     <div className="px-6">
@@ -22,12 +15,14 @@ const Favourites = () => {
         Your <span className=" font-bold text-pink-700">Loved</span> Picks{" "}
         <IoIosHeart size={32} className="text-pink-700 inline" />
       </div>
-      <div className="text-pink-700 mb-5 ">
-        <button className="flex gap-2 items-center p-2 px-4 rounded-md bg-pink-100 font-medium transition-all duration-300 ease-in-out hover:bg-pink-200 ">
-          <RiArrowGoBackFill />
-          <div>Go back</div>
-        </button>
-      </div>
+      <Link to="/">
+        <div className="text-pink-700 mb-5 ">
+          <button className="flex gap-2 items-center p-2 px-4 rounded-md bg-pink-100 font-medium transition-all duration-300 ease-in-out hover:scale-105 hover:bg-pink-200 ">
+            <RiArrowGoBackFill />
+            <div>Go back</div>
+          </button>
+        </div>
+      </Link>
       {favourites.length === 0 && (
         <div className="text-center text-gray-600  mt-[200px] ">
           <div>No Favourites Added</div>
