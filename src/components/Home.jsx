@@ -227,7 +227,7 @@ const Home = () => {
               </button>
 
               <div
-                className={`mt-2 w-44 right-0 absolute  rounded shadow-lg p-2 text-sm z-40 text-pink-700 bg-pink-50 transition-all duration-300 ease-in  ${
+                className={`mt-2 w-44 md:right-0 sm:left-4 absolute  rounded shadow-lg p-2 text-sm z-40 text-pink-700 bg-pink-50 transition-all duration-300 ease-in  ${
                   showChooseTime
                     ? "opacity-100 translate-y-0 visible"
                     : "opacity-0 -translate-y-2 invisible"
